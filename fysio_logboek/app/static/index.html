@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E6E9E3">
+<title>Fysio Logboek</title>
+<style>
+  :root {
+    --bg: #E6E9E3;
+    --surface: #FBFBF8;
+    --ink: #16211D;
+    --soft: #5D6A63;
+    --line: #CDD3CB;
+    --accent: #2F4BC7;
+    --reps: #4E6B5B;
+    --warn: #A3402C;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans);
+    padding: 20px 14px calc(40px + env(safe-area-inset-bottom));
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  h1 { margin: 6px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+  .eyebrow, .label, .tab, .btn, .stat-k {
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: .14em;
+  }
+  .eyebrow { font-size: 11px; color: var(--soft); letter-spacing: .2em; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  .label { display: flex; justify-content: space-between; align-items: baseline;
+           font-size: 11px; color: var(--soft); margin-bottom: 8px; }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); margin: 18px 0 16px; }
+  .tab { flex: 1; padding: 12px 4px; border: none; background: none; cursor: pointer;
+         font-size: 11px; color: var(--soft); border-bottom: 2px solid transparent; }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+  .btn { padding: 16px; width: 100%; border: none; border-radius: 12px; background: var(--accent);
+         color: #fff; font-size: 13px; cursor: pointer; }
+  .btn.ghost { background: none; border: 1px solid var(--line); color: var(--ink); padding: 11px 14px; width: auto; font-size: 11px; }
+  .chip { padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line);
+          background: none; color: var(--ink); font-size: 15px; cursor: pointer;
+          font-family: var(--sans); display: inline-flex; align-items: baseline; gap: 7px; }
+  .chip .tally { font-family: var(--mono); font-size: 11px; opacity: .65; letter-spacing: .04em; }
+  .chip[data-state="deels"] { border-color: var(--accent); }
+  .chip[data-state="deels"] .tally { color: var(--accent); opacity: 1; }
+  .chip[data-state="klaar"] { border-color: var(--reps); color: var(--reps); background: #EBF0E8; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .chip[aria-pressed="true"] .tally { color: var(--surface); opacity: .8; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .daybar { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+  .daybar .count { font-family: var(--mono); font-size: 28px; font-weight: 700; line-height: 1; }
+  .daybar .of { font-family: var(--mono); font-size: 12px; color: var(--soft); }
+  .track { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 12px; }
+  .track span { display: block; height: 100%; background: var(--reps); border-radius: 2px; }
+  .target { width: 62px; padding: 7px 8px; font-family: var(--mono); font-size: 13px;
+            border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+  .stepper { display: flex; align-items: center; gap: 10px; }
+  .stepper button { width: 52px; height: 52px; flex: 0 0 auto; border: 1px solid var(--line);
+                    background: var(--surface); border-radius: 10px; font-size: 24px;
+                    font-family: var(--mono); color: var(--ink); cursor: pointer; }
+  .stepper .field { flex: 1; height: 52px; display: flex; align-items: center; justify-content: center;
+                    gap: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  .stepper input { width: 100%; border: none; outline: none; background: none; text-align: center;
+                   font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--ink); }
+  .stepper .suffix { font-family: var(--mono); font-size: 13px; color: var(--soft); padding-right: 10px; }
+  input[type="date"], input[type="text"], select, textarea {
+    width: 100%; padding: 14px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); color: var(--ink); font-size: 16px; font-family: var(--sans);
+  }
+  input[type="date"] { font-family: var(--mono); font-size: 15px; }
+  textarea { font-family: var(--mono); font-size: 11px; height: 120px; }
+  .row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-top: 1px solid var(--line); }
+  .row .date { font-family: var(--mono); font-size: 12px; color: var(--soft); width: 62px; flex: 0 0 auto; }
+  .row .name { flex: 1; font-size: 15px; }
+  .row .num { font-family: var(--mono); font-size: 14px; }
+  .x { border: none; background: none; color: var(--soft); font-size: 18px; cursor: pointer; padding: 0 2px; line-height: 1; }
+  .units { display: flex; gap: 8px; margin: 12px 0 14px; }
+  .units button { flex: 1; padding: 12px 4px; border: 1px solid var(--line); border-radius: 10px;
+                  background: none; color: var(--soft); font-family: var(--mono); font-size: 12px; cursor: pointer; }
+  .units button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .stat-k { font-size: 10px; color: var(--soft); letter-spacing: .12em; }
+  .stat-v { font-family: var(--mono); font-size: 30px; font-weight: 700; line-height: 1.2; }
+  .delta { font-size: 13px; margin-left: 6px; }
+  .up { color: var(--reps); } .down { color: var(--warn); }
+  .muted { color: var(--soft); font-size: 15px; line-height: 1.5; margin: 0 0 14px; }
+  .graphpaper { background-image:
+      repeating-linear-gradient(var(--line) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 22px); }
+  .paperinner { background: rgba(251,251,248,.84); border-radius: 8px; padding: 4px 0 0; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+           background: var(--ink); color: var(--surface); padding: 12px 20px; border-radius: 999px;
+           font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+  .banner { border-color: var(--warn); color: var(--warn); font-size: 14px; padding: 12px; }
+  button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: no-preference) { .toast { animation: pop .18s ease-out; } }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, 8px); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fysio · logboek</div>
+    <h1>Wat heb je gedaan?</h1>
+  </header>
+  <div id="banner"></div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="log" aria-selected="true">Loggen</button>
+    <button class="tab" role="tab" data-tab="trend" aria-selected="false">Trend</button>
+    <button class="tab" role="tab" data-tab="beheer" aria-selected="false">Oefeningen</button>
+  </div>
+  <main id="view"></main>
+</div>
+
+<script>
+"use strict";
+
+/* Ingress zet de app achter een pad met token, dus alles relatief opbouwen. */
+const BASE = window.location.pathname.replace(/\/index\.html$/, "").replace(/\/$/, "") + "/";
+const UNITS = [
+  { id: "kg", label: "kg" },
+  { id: "niveau", label: "niveau" },
+  { id: "geen", label: "geen" },
+];
+
+const state = {
+  tab: "log",
+  exercises: [],
+  entries: [],
+  pick: null,
+  trend: null,
+  reps: 10,
+  weight: 0,
+  date: todayISO(),
+  newUnit: "kg",
+  newTarget: 2,
+};
+
+function todayISO() {
+  const d = new Date();
+  return [d.getFullYear(), d.getMonth() + 1, d.getDate()]
+    .map((n, i) => (i ? String(n).padStart(2, "0") : n))
+    .join("-");
+}
+function nlDate(iso) {
+  const [y, m, d] = iso.split("-");
+  return Number(d) + "-" + Number(m) + "-" + y.slice(2);
+}
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function exOf(id) {
+  return state.exercises.find((e) => e.id === id);
+}
+function unitOf(id) {
+  const ex = exOf(id);
+  return ex ? ex.unit : "kg";
+}
+/* Aantal sessies per oefening op de gekozen datum. */
+function doneToday() {
+  const counts = {};
+  state.entries.forEach((e) => {
+    if (e.date === state.date) counts[e.exercise_id] = (counts[e.exercise_id] || 0) + 1;
+  });
+  return counts;
+}
+/* Vorige keer overnemen, zodat de tweede sessie van de dag één tik is. */
+function prefillFrom(exerciseId) {
+  const last = state.entries.find((e) => e.exercise_id === exerciseId);
+  if (!last) return;
+  state.reps = last.reps;
+  state.weight = last.weight || 0;
+}
+
+/* ---------- api ---------- */
+async function api(path, options) {
+  const res = await fetch(BASE + path, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.status === 204 ? null : res.json();
+}
+async function load() {
+  try {
+    const data = await api("api/state");
+    state.exercises = data.exercises;
+    state.entries = data.entries;
+    if (!state.pick && data.exercises.length) state.pick = data.exercises[0].id;
+    if (!state.trend && data.exercises.length) state.trend = data.exercises[0].id;
+    banner("");
+  } catch (e) {
+    banner("Geen verbinding met de add-on. Draait de container nog?");
+  }
+  render();
+}
+function banner(msg) {
+  document.getElementById("banner").innerHTML = msg
+    ? '<div class="card banner">' + esc(msg) + "</div>"
+    : "";
+}
+function toast(msg) {
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1800);
+}
+
+/* ---------- grafiek ---------- */
+function chart(series, unit, target) {
+  const W = 520, H = 220, padL = 34, padR = 34, padB = 26, padT = 10;
+  const iw = W - padL - padR, ih = H - padT - padB;
+  const maxR = Math.max(1, ...series.map((s) => s.reps));
+  const maxW = Math.max(1, ...series.map((s) => s.weight));
+  const n = series.length;
+  const slot = iw / n;
+  const bw = Math.min(26, slot * 0.55);
+
+  let bars = "", dots = "", path = "", labels = "";
+  series.forEach((s, i) => {
+    const cx = padL + slot * i + slot / 2;
+    const bh = (s.reps / maxR) * ih;
+    const full = s.count >= target;
+    bars += `<rect x="${cx - bw / 2}" y="${padT + ih - bh}" width="${bw}" height="${bh}" rx="3"
+      fill="var(--reps)" fill-opacity="${full ? 1 : 0.35}"><title>${esc(nlDate(s.date))}: ${s.reps}× over ${s.count} van ${target} sessies</title></rect>`;
+    const y = padT + ih - (s.weight / maxW) * ih;
+    path += (i ? " L" : "M") + cx.toFixed(1) + " " + y.toFixed(1);
+    dots += `<circle cx="${cx.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--accent)"><title>${esc(nlDate(s.date))}: ${s.weight}${unit === "kg" ? " kg" : ""}</title></circle>`;
+    const showEvery = Math.ceil(n / 6);
+    if (i % showEvery === 0 || i === n - 1)
+      labels += `<text x="${cx}" y="${H - 8}" text-anchor="middle" font-size="10" font-family="var(--mono)" fill="var(--soft)">${esc(nlDate(s.date))}</text>`;
+  });
+
+  let grid = "";
+  for (let g = 0; g <= 4; g++) {
+    const y = padT + (ih / 4) * g;
+    grid += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
+    grid += `<text x="${padL - 6}" y="${y + 3}" text-anchor="end" font-size="10" font-family="var(--mono)" fill="var(--soft)">${Math.round(maxR - (maxR / 4) * g)}</text>`;
+    grid += `<text x="${W - padR + 6}" y="${y + 3}" font-size="10" font-family="var(--mono)" fill="var(--accent)">${(maxW - (maxW / 4) * g).toFixed(maxW < 10 ? 1 : 0)}</text>`;
+  }
+
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="220" role="img"
+    aria-label="Verloop van herhalingen en zwaarte">
+    ${grid}${bars}
+    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5"
+          stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}${labels}
+  </svg>`;
+}
+
+/* ---------- views ---------- */
+function stepper(key, step, suffix) {
+  return `<div class="stepper" data-stepper="${key}" data-step="${step}">
+    <button type="button" data-bump="-1" aria-label="minder">−</button>
+    <div class="field">
+      <input type="number" inputmode="decimal" value="${state[key]}" data-input="${key}">
+      ${suffix ? `<span class="suffix">${suffix}</span>` : ""}
+    </div>
+    <button type="button" data-bump="1" aria-label="meer">+</button>
+  </div>`;
+}
+
+function viewLog() {
+  if (!state.exercises.length)
+    return `<div class="card">
+      <div class="label"><span>Nog geen oefeningen</span></div>
+      <p class="muted">Zet eerst de oefeningen van je fysio in de lijst. Daarna log je een sessie in drie tikken.</p>
+      <button class="btn" data-goto="beheer">Oefening toevoegen</button></div>`;
+
+  const unit = unitOf(state.pick);
+  const ex = state.exercises.find((e) => e.id === state.pick);
+  const recent = state.entries.slice(0, 12);
+
+  const done = doneToday();
+  const totalDone = state.exercises.reduce(
+    (n, e) => n + Math.min(done[e.id] || 0, e.daily_target), 0);
+  const totalGoal = state.exercises.reduce((n, e) => n + e.daily_target, 0);
+  const pct = totalGoal ? Math.round((totalDone / totalGoal) * 100) : 0;
+  const viewingToday = state.date === todayISO();
+
+  return `
+  <div class="card">
+    <div class="label"><span>${viewingToday ? "Vandaag" : "Op " + nlDate(state.date)}</span>
+      <span>${pct === 100 ? "rondje compleet" : "tik aan om te loggen"}</span></div>
+    <div class="daybar">
+      <span class="count">${totalDone}</span>
+      <span class="of">van ${totalGoal} sessies</span>
+    </div>
+    <div class="chips">${state.exercises.map((e) => {
+      const n = done[e.id] || 0;
+      const st = n === 0 ? "open" : n >= e.daily_target ? "klaar" : "deels";
+      return `<button class="chip" data-pick="${e.id}" data-state="${st}"
+        aria-pressed="${e.id === state.pick}">${esc(e.name)}<span class="tally">${
+        st === "klaar" ? "✓ " : ""}${n}/${e.daily_target}</span></button>`;
+    }).join("")}</div>
+    <div class="track"><span style="width:${pct}%"></span></div>
+  </div>
+
+  <div class="card">
+    <div class="label"><span>Herhalingen</span><span>${
+      ex ? esc(ex.name) + " · " + (done[ex.id] >= ex.daily_target
+        ? "extra sessie"
+        : "sessie " + ((done[ex.id] || 0) + 1) + " van " + ex.daily_target) : ""}</span></div>
+    ${stepper("reps", 1, "×")}
+    ${unit !== "geen" ? `<div style="margin-top:18px">
+      <div class="label"><span>${unit === "kg" ? "Gewicht" : "Niveau"}</span></div>
+      ${stepper("weight", unit === "kg" ? 0.5 : 1, unit === "kg" ? "kg" : "")}
+    </div>` : ""}
+    <div style="margin-top:18px">
+      <div class="label"><span>Datum</span></div>
+      <input type="date" value="${state.date}" data-input="date">
+    </div>
+  </div>
+
+  <button class="btn" data-save="1">Opslaan</button>
+
+  ${recent.length ? `<div class="card" style="margin-top:14px">
+    <div class="label"><span>Laatste sessies</span><span>${state.entries.length} totaal</span></div>
+    ${recent.map((e) => {
+      const x = state.exercises.find((o) => o.id === e.exercise_id);
+      if (!x) return "";
+      const w = e.weight ? ` ${e.weight}${x.unit === "kg" ? "kg" : ""}` : "";
+      return `<div class="row"><span class="date">${nlDate(e.date)}</span>
+        <span class="name">${esc(x.name)}</span>
+        <span class="num">${e.reps}×${w}</span>
+        <button class="x" data-del-entry="${e.id}" aria-label="verwijderen">×</button></div>`;
+    }).join("")}
+  </div>` : ""}`;
+}
+
+function viewTrend() {
+  if (!state.exercises.length)
+    return `<div class="card"><p class="muted">Voeg eerst een oefening toe.</p></div>`;
+
+  const unit = unitOf(state.trend);
+  const map = new Map();
+  state.entries.filter((e) => e.exercise_id === state.trend).forEach((e) => {
+    const cur = map.get(e.date);
+    if (!cur) map.set(e.date, { date: e.date, reps: e.reps, weight: e.weight || 0, count: 1 });
+    else {
+      cur.reps += e.reps;
+      cur.weight = Math.max(cur.weight, e.weight || 0);
+      cur.count += 1;
+    }
+  });
+  const series = [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
+
+  const picker = `<div class="card">
+    <div class="label"><span>Oefening</span></div>
+    <select data-trend="1">${state.exercises.map((e) =>
+      `<option value="${e.id}" ${e.id === state.trend ? "selected" : ""}>${esc(e.name)}</option>`).join("")}</select>
+  </div>`;
+
+  const exportCard = `<div class="card">
+    <div class="label"><span>Alle data</span></div>
+    <p class="muted">Eén regel per sessie, komma-gescheiden, kolom volume is reps × gewicht.</p>
+    <a class="btn ghost" href="${BASE}api/export.csv" download style="display:inline-block;text-decoration:none">CSV downloaden</a>
+  </div>`;
+
+  if (!series.length)
+    return picker + `<div class="card"><p class="muted">Nog geen sessies voor deze oefening. Log er een en de lijn begint te lopen.</p></div>` + exportCard;
+
+  const first = series[0], last = series[series.length - 1];
+  const stats = [
+    { k: "Herhalingen nu", v: last.reps, d: last.reps - first.reps },
+    { k: unit === "kg" ? "Kilo's nu" : "Niveau nu", v: last.weight, d: Math.round((last.weight - first.weight) * 10) / 10 },
+    { k: "Beste reps", v: Math.max(...series.map((s) => s.reps)) },
+    { k: "Zwaarste", v: Math.max(...series.map((s) => s.weight)) },
+  ];
+
+  const target = (exOf(state.trend) || {}).daily_target || 1;
+  const complete = series.filter((s) => s.count >= target).length;
+
+  return picker + `
+  <div class="card graphpaper">
+    <div class="paperinner">
+      <div class="label"><span>Verloop per dag</span><span>lichte staaf = doel niet gehaald</span></div>
+      ${chart(series, unit, target)}
+    </div>
+  </div>
+  <div class="card">
+    <div class="label"><span>Sinds de eerste keer</span>
+      <span>${complete} van ${series.length} dagen compleet</span></div>
+    <div class="stats">${stats.map((s) => `<div>
+      <div class="stat-k">${s.k}</div>
+      <div class="stat-v">${s.v}${s.d ? `<span class="delta ${s.d > 0 ? "up" : "down"}">${s.d > 0 ? "+" : ""}${s.d}</span>` : ""}</div>
+    </div>`).join("")}</div>
+  </div>` + exportCard;
+}
+
+function viewBeheer() {
+  return `
+  <div class="card">
+    <div class="label"><span>Nieuwe oefening</span></div>
+    <input type="text" data-input="newName" placeholder="Bijv. Bridge, kuitheffen, roeien elastiek">
+    <div class="units">${UNITS.map((u) =>
+      `<button data-unit="${u.id}" aria-pressed="${state.newUnit === u.id}">${u.label}</button>`).join("")}</div>
+    <div class="label"><span>Keer per dag</span></div>
+    <input class="target" type="number" min="1" max="12" value="${state.newTarget}"
+           data-input="newTarget" style="margin-bottom:14px">
+    <button class="btn" data-add="1">Toevoegen</button>
+  </div>
+
+  ${state.exercises.length ? `<div class="card">
+    <div class="label"><span>Jouw lijst</span><span>doel per dag</span></div>
+    ${state.exercises.map((e) => {
+      const n = state.entries.filter((x) => x.exercise_id === e.id).length;
+      return `<div class="row"><span class="name">${esc(e.name)}
+        <span style="color:var(--soft);font-family:var(--mono);font-size:11px"> ${e.unit} · ${n}×</span></span>
+        <input class="target" type="number" min="1" max="12" value="${e.daily_target}"
+               data-target="${e.id}" aria-label="keer per dag voor ${esc(e.name)}">
+        <button class="x" data-del-ex="${e.id}" data-count="${n}" data-name="${esc(e.name)}" aria-label="verwijderen">×</button></div>`;
+    }).join("")}
+  </div>` : ""}
+
+  <div class="card">
+    <div class="label"><span>CSV importeren</span></div>
+    <p class="muted">Plak een eerder geëxporteerde CSV. Dubbele regels worden overgeslagen.</p>
+    <textarea data-input="importText" placeholder="datum,oefening,eenheid,herhalingen,gewicht,volume"></textarea>
+    <div style="margin-top:12px"><button class="btn ghost" data-import="1">Importeren</button></div>
+  </div>`;
+}
+
+function render() {
+  document.querySelectorAll(".tab").forEach((t) =>
+    t.setAttribute("aria-selected", String(t.dataset.tab === state.tab)));
+  const view = document.getElementById("view");
+  view.innerHTML =
+    state.tab === "log" ? viewLog() : state.tab === "trend" ? viewTrend() : viewBeheer();
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", async (ev) => {
+  const t = ev.target.closest("button, a");
+  if (!t) return;
+
+  if (t.dataset.tab) { state.tab = t.dataset.tab; render(); return; }
+  if (t.dataset.goto) { state.tab = t.dataset.goto; render(); return; }
+  if (t.dataset.pick) { state.pick = t.dataset.pick; prefillFrom(state.pick); render(); return; }
+  if (t.dataset.unit) { state.newUnit = t.dataset.unit; render(); return; }
+
+  if (t.dataset.bump) {
+    const box = t.closest("[data-stepper]");
+    const key = box.dataset.stepper, step = Number(box.dataset.step);
+    state[key] = Math.max(0, Math.round((state[key] + Number(t.dataset.bump) * step) * 100) / 100);
+    box.querySelector("input").value = state[key];
+    return;
+  }
+
+  if (t.dataset.save) {
+    try {
+      await api("api/entries", {
+        method: "POST",
+        body: JSON.stringify({
+          exercise_id: state.pick,
+          date: state.date,
+          reps: Number(state.reps) || 0,
+          weight: unitOf(state.pick) === "geen" ? null : Number(state.weight) || 0,
+        }),
+      });
+      const ex = exOf(state.pick);
+      await load();
+      const n = doneToday()[state.pick] || 0;
+      toast(n >= ex.daily_target
+        ? ex.name + " klaar voor vandaag"
+        : ex.name + " " + n + " van " + ex.daily_target);
+    } catch (e) { banner("Opslaan mislukt: " + e.message); }
+    return;
+  }
+
+  if (t.dataset.add) {
+    const name = (state.newName || "").trim();
+    if (!name) return;
+    try {
+      await api("api/exercises", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          unit: state.newUnit,
+          daily_target: Number(state.newTarget) || 2,
+        }),
+      });
+      state.newName = "";
+      toast(name + " toegevoegd");
+      await load();
+    } catch (e) { banner("Toevoegen mislukt: " + e.message); }
+    return;
+  }
+
+  if (t.dataset.delEntry) {
+    await api("api/entries/" + t.dataset.delEntry, { method: "DELETE" });
+    await load();
+    return;
+  }
+
+  if (t.dataset.delEx) {
+    const n = Number(t.dataset.count);
+    if (n && !confirm(t.dataset.name + " en " + n + " sessies verwijderen?")) return;
+    await api("api/exercises/" + t.dataset.delEx, { method: "DELETE" });
+    if (state.pick === t.dataset.delEx) state.pick = null;
+    if (state.trend === t.dataset.delEx) state.trend = null;
+    await load();
+    return;
+  }
+
+  if (t.dataset.import) {
+    try {
+      const r = await api("api/import", {
+        method: "POST",
+        body: JSON.stringify({ csv: state.importText || "" }),
+      });
+      toast(r.entries + " sessies erbij");
+      state.importText = "";
+      await load();
+    } catch (e) { banner("Importeren mislukt: " + e.message); }
+  }
+});
+
+document.addEventListener("input", (ev) => {
+  const key = ev.target.dataset.input;
+  if (key) state[key] = ev.target.type === "number" ? Number(ev.target.value) : ev.target.value;
+});
+
+document.addEventListener("change", async (ev) => {
+  if (ev.target.dataset.trend) { state.trend = ev.target.value; render(); return; }
+
+  if (ev.target.dataset.target) {
+    const ex = exOf(ev.target.dataset.target);
+    if (!ex) return;
+    const target = Math.max(1, Math.min(12, Number(ev.target.value) || 1));
+    try {
+      await api("api/exercises/" + ex.id, {
+        method: "PATCH",
+        body: JSON.stringify({ name: ex.name, unit: ex.unit, daily_target: target }),
+      });
+      await load();
+      toast(ex.name + ": " + target + "× per dag");
+    } catch (e) { banner("Doel opslaan mislukt: " + e.message); }
+  }
+});
+
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Enter" && ev.target.dataset.input === "newName")
+    document.querySelector("[data-add]").click();
+});
+
+load();
+</script>
+</body>
+</html>
