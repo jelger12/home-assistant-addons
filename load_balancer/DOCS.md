@@ -1,0 +1,65 @@
+# Load balancer
+
+Beschermt de hoofdzekering. Elke seconde leest hij de stroom per fase, en
+zo nodig verlaagt hij de dynamische circuitlimiet van de Easee, schakelt
+hij apparaten af of pauzeert hij het laden. Prijsgestuurd laden blijft bij
+je energieleverancier.
+
+De add-on gebruikt een voorgebouwd image van ghcr.io; de broncode staat in
+een privé-repository.
+
+## Schakelaars
+
+- **shadow** (standaard aan): wel beslissen en loggen, maar niets
+  veranderen. Laat hem aan bij een eerste start en lees het log.
+- **record** (standaard uit): schrijf de invoer van elke beslissing naar
+  `recordings/lbd.jsonl` in de map van de add-on, voor een replay in de
+  simulator. Dat is ongeveer 20 MB per dag.
+
+## Configuratie
+
+De rest staat in `config.yaml` in de map van deze add-on in
+`addon_configs`, bijvoorbeeld te bewerken met de Studio Code Server
+add-on. Bij het opstarten controleert de add-on of elke entity en service
+daaruit in Home Assistant bestaat. Zo niet, dan stopt hij en staan alle
+problemen in het log.
+
+Een begin, met de Tibber Pulse en een Easee. Vervang elke `<...>`:
+
+```yaml
+fuse:
+  rated: 25          # A, de hoofdzekering
+
+# Stroom per fase bij de hoofdzekering, in A.
+grid:
+  l1: sensor.tibber_pulse_<home>_huidig_voltage_l1
+  l2: sensor.tibber_pulse_<home>_huidig_voltage_l2
+  l3: sensor.tibber_pulse_<home>_huidig_voltage_l3
+
+charger:
+  device_id: <easee-device-id>   # Instellingen > Apparaten > de laadpaal, in de URL
+  current:
+    l1: {entity: sensor.<serial>_stroom, attribute: state_inCurrentT2}
+    l2: {entity: sensor.<serial>_stroom, attribute: state_inCurrentT3}
+    l3: {entity: sensor.<serial>_stroom, attribute: state_inCurrentT4}
+
+cars:
+  - name: zoe
+    min_amps: 8
+    max_amps: 32
+    allow_pause: true
+    allow_phase_switch: true
+
+safe_limit: 6        # A per fase bij twijfel
+```
+
+Optioneel: `devices` (schakelbare apparaten met fasen, prioriteit en
+eventueel een meter), de tijden (`stale_after`, `raise_delay`, ...) en een
+sectie `engine` (`charger_interval`, `poll_states`, `safe_limit_on_stop`,
+...). Alles daarvan heeft een standaardwaarde.
+
+## Updaten
+
+Een nieuwe versie verschijnt als `version` in `config.yaml` van deze
+add-on omhoog gaat. Het image met die versie moet dan al op ghcr.io
+staan.

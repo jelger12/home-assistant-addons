@@ -1,7 +1,17 @@
 # CLAUDE.md
 
-Home Assistant add-on repository. Bevat één add-on: **Fysio Logboek**, voor het bijhouden
-van fysiotherapie-oefeningen.
+Home Assistant add-on repository. Bevat twee add-ons: **Fysio Logboek**, voor het bijhouden
+van fysiotherapie-oefeningen, en **Load balancer**, die de hoofdzekering beschermt.
+
+## Load balancer
+
+`load_balancer/` bevat alleen het manifest (`config.yaml`) en `DOCS.md`. De code staat in de
+privé-repo `jelger12/ha-load-balancer`, die bij een tag `v<versie>` de images
+`ghcr.io/jelger12/{arch}-ha-load-balancer` bouwt. Een release: eerst daar taggen, dan hier
+`version` ophogen. Deze repo is publiek: zet hier nooit persoonlijke gegevens, entity-ID's
+of een echte configuratie van de load balancer.
+
+De rest van dit bestand gaat over Fysio Logboek.
 
 ## Wat het is
 
