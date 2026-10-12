@@ -1,0 +1,32 @@
+# The Supervisor pulls the prebuilt image for the architecture of the
+# host. The image is built from a private repository when a tag
+# v<version> is pushed there; bump version here to that tag.
+name: Load balancer
+version: "0.1.0"
+slug: load_balancer
+description: Beschermt de hoofdzekering door de Easee-laadpaal terug te schroeven en apparaten af te schakelen.
+url: https://github.com/jelger12/home-assistant-addons
+arch:
+  - aarch64
+  - amd64
+image: ghcr.io/jelger12/{arch}-ha-load-balancer
+stage: experimental
+startup: application
+boot: auto
+# lbd handles SIGTERM itself and runs as PID 1.
+init: false
+# Gives SUPERVISOR_TOKEN and access to ws://supervisor/core/websocket.
+homeassistant_api: true
+# The YAML configuration lives in the addon_config folder, mounted at
+# /config inside the container.
+map:
+  - type: addon_config
+    read_only: false
+# The switches you turn on and off often. Everything else is in
+# config.yaml in the addon_configs folder of this add-on.
+options:
+  shadow: true
+  record: false
+schema:
+  shadow: bool
+  record: bool
