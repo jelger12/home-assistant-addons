@@ -24,17 +24,22 @@ add-on. Bij het opstarten controleert de add-on of elke entity en service
 daaruit in Home Assistant bestaat. Zo niet, dan stopt hij en staan alle
 problemen in het log.
 
-Een begin, met de Tibber Pulse en een Easee. Vervang elke `<...>`:
+Een begin, met een slimme meter op de P1-poort (DSMR-integratie) en een
+Easee. Vervang elke `<...>`. Zet in Home Assistant eerst de entities voor de
+stroom per fase en het tijdstip aan; die staan bij DSMR standaard uit.
 
 ```yaml
 fuse:
   rated: 25          # A, de hoofdzekering
 
-# Stroom per fase bij de hoofdzekering, in A.
+# Stroom per fase bij de hoofdzekering, in A. DSMR schrijft een sensor
+# alleen als de waarde verandert; de heartbeat verandert bij elk telegram
+# en houdt gelijkgebleven waarden vers.
 grid:
-  l1: sensor.tibber_pulse_<home>_huidig_voltage_l1
-  l2: sensor.tibber_pulse_<home>_huidig_voltage_l2
-  l3: sensor.tibber_pulse_<home>_huidig_voltage_l3
+  l1: sensor.electricity_meter_stroom_fase_l1
+  l2: sensor.electricity_meter_stroom_fase_l2
+  l3: sensor.electricity_meter_stroom_fase_l3
+  heartbeat: sensor.electricity_meter_tijdstip
 
 charger:
   device_id: <easee-device-id>   # Instellingen > Apparaten > de laadpaal, in de URL
@@ -52,6 +57,10 @@ cars:
 
 safe_limit: 6        # A per fase bij twijfel
 ```
+
+Met een Tibber Pulse in plaats van DSMR gebruik je
+`sensor.tibber_pulse_<home>_huidig_voltage_l1` (en `_l2`, `_l3`), zonder
+`heartbeat`.
 
 Optioneel: `devices` (schakelbare apparaten met fasen, prioriteit en
 eventueel een meter), de tijden (`stale_after`, `raise_delay`, ...) en een

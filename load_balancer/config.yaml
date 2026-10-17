@@ -2,7 +2,7 @@
 # host. The image is built from a private repository when a tag
 # v<version> is pushed there; bump version here to that tag.
 name: Load balancer
-version: "0.1.0"
+version: "0.2.0"
 slug: load_balancer
 description: Beschermt de hoofdzekering door de Easee-laadpaal terug te schroeven en apparaten af te schakelen.
 url: https://github.com/jelger12/home-assistant-addons
