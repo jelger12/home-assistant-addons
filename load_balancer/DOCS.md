@@ -68,7 +68,10 @@ Met een Tibber Pulse in plaats van DSMR gebruik je
 `heartbeat`.
 
 Optioneel: `devices` (schakelbare apparaten met fasen, prioriteit en
-eventueel een meter), de tijden (`stale_after`, `raise_delay`, ...) en een
+eventueel een meter). De schakelaar mag elke entity zijn die
+`homeassistant.turn_on` en `turn_off` begrijpt, ook een thermostaat;
+met een meter telt een apparaat alleen als aan zolang het stroom
+trekt. Verder optioneel: de tijden (`stale_after`, `raise_delay`, ...) en een
 sectie `engine` (`charger_interval`, `poll_states`, `safe_limit_on_stop`,
 ...). Alles daarvan heeft een standaardwaarde.
 
