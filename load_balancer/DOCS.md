@@ -43,11 +43,14 @@ grid:
 
 charger:
   device_id: <easee-device-id>   # Instellingen > Apparaten > de laadpaal, in de URL
-  # Laadstroom per fase: T3, T4 en T5 dragen de fasen, T2 niet.
+  # Laadstroom per fase van de lader: T3, T4 en T5, T2 is de nul.
   current:
     l1: {entity: sensor.<serial>_stroom, attribute: state_inCurrentT3}
     l2: {entity: sensor.<serial>_stroom, attribute: state_inCurrentT4}
     l3: {entity: sensor.<serial>_stroom, attribute: state_inCurrentT5}
+  # Optioneel: op welke fase van het huis elke fase van de lader zit, als
+  # de installateur ze gedraaid heeft. Standaard [L1, L2, L3].
+  # phases: [L2, L3, L1]
   # Optioneel: een entity met als state de naam van een profiel uit cars,
   # bijvoorbeeld een template-sensor. Elke andere state, of geen car,
   # betekent het strengste profiel.
