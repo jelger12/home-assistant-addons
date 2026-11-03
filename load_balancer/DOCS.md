@@ -51,6 +51,13 @@ charger:
   # Optioneel: op welke fase van het huis elke fase van de lader zit, als
   # de installateur ze gedraaid heeft. Standaard [L1, L2, L3].
   # phases: [L2, L3, L1]
+  # Aanbevolen: waar de laadpaal zijn circuitlimiet meldt. De Easee-service
+  # in HA meldt een mislukte aanroep als geslaagd; hiermee controleert de
+  # load balancer dat een limiet aankomt (confirm_after, standaard 30 s).
+  limit:
+    l1: {entity: sensor.<serial>_dynamic_laadgrens_van_stroomcircuit, attribute: state_dynamicCircuitCurrentP1}
+    l2: {entity: sensor.<serial>_dynamic_laadgrens_van_stroomcircuit, attribute: state_dynamicCircuitCurrentP2}
+    l3: {entity: sensor.<serial>_dynamic_laadgrens_van_stroomcircuit, attribute: state_dynamicCircuitCurrentP3}
   # Optioneel: een entity met als state de naam van een profiel uit cars,
   # bijvoorbeeld een template-sensor. Elke andere state, of geen car,
   # betekent het strengste profiel.
